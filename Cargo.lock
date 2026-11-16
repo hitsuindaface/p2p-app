@@ -2189,6 +2189,7 @@ dependencies = [
  "blake3",
  "hyper",
  "rusqlite",
+ "socket2",
  "tauri",
  "tokio",
 ]
