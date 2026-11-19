@@ -107,9 +107,70 @@ function Test-Deps {
     if ($ok) { Write-Host "Everything is installed." } else { throw "Run: .\make setup" }
 }
 
+function Write-Step([string]$Text) { Write-Host "`n== $Text" -ForegroundColor Cyan }
+function Write-Note([string]$Text) { Write-Host $Text -ForegroundColor Yellow }
+
+# Start-of-day routine, the same as scripts/recap.sh on Linux.
+# It only fast-forwards, so it cannot create merge commits or conflicts.
+function Invoke-Recap {
+    Write-Step "Code"
+    $branch = git branch --show-current
+    Write-Host "You are on: $branch"
+    git fetch --prune --quiet origin
+    if ($LASTEXITCODE -ne 0) { Write-Note "Could not reach GitHub. Continuing with the code you have." }
+
+    $before = git rev-parse HEAD
+    git rev-parse --abbrev-ref "@{u}" *> $null
+    if ($LASTEXITCODE -eq 0) {
+        git pull --ff-only --quiet
+        if ($LASTEXITCODE -ne 0) { Write-Note "Could not update ${branch}: it has commits that GitHub does not have, and the reverse. Merge or rebase it yourself." }
+    } else {
+        Write-Note "$branch is not on GitHub yet. Push it with: git push -u origin $branch"
+    }
+
+    if ($before -ne (git rev-parse HEAD)) {
+        Write-Host "New commits on ${branch}:"
+        git log --oneline "$before..HEAD"
+    } else {
+        Write-Host "$branch is up to date."
+    }
+
+    if ($branch -ne "main") {
+        git rev-parse -q --verify origin/main *> $null
+        if ($LASTEXITCODE -eq 0) {
+            $behind = [int](git rev-list --count HEAD..origin/main)
+            if ($behind -gt 0) { Write-Note "main has $behind commit(s) that $branch does not have. To bring them in: git merge origin/main" }
+        }
+    }
+
+    $changes = @(git status --porcelain).Count
+    if ($changes -gt 0) { Write-Note "You have $changes file(s) with uncommitted changes." }
+
+    git diff --quiet $before HEAD -- .dependencies
+    if ($LASTEXITCODE -ne 0) { Write-Note ".dependencies changed in the new commits. Run: .\make setup" }
+
+    Write-Step "Rust"
+    rustup update --no-self-update 2>&1 | Select-String "updated|unchanged|error"
+
+    Write-Step "Tools"
+    try { Test-Deps *> $null; Write-Host "Everything in .dependencies is installed." }
+    catch { Write-Note "Something in .dependencies is missing. Run: .\make doctor, then .\make setup" }
+
+    Write-Step "Build"
+    cargo build --quiet
+    if ($LASTEXITCODE -eq 0) { Write-Host "Build OK." } else { Write-Note "The build failed. Read the errors above." }
+
+    Write-Step "Pull requests"
+    $gh = Get-Command gh -ErrorAction SilentlyContinue
+    if ($gh) { gh auth status *> $null }
+    if ($gh -and $LASTEXITCODE -eq 0) { gh pr status }
+    else { Write-Host "Install and log in to the GitHub CLI (gh) to see pull requests waiting for your review here." }
+}
+
 $targets = [ordered]@{
     help    = "Show this list"
     setup   = "Install everything in .dependencies"
+    recap   = "Start of the day: get the latest code, update Rust, check tools, build"
     doctor  = "Check that everything is installed, without changing anything"
     build   = "Build a debug version"
     release = "Build an optimised version"
@@ -133,6 +194,7 @@ switch ($Target) {
         Install-Rust
         Write-Host "`nSetup done. Reopen the terminal so 'cargo' is on your PATH, then run: .\make build"
     }
+    "recap"   { Invoke-Recap }
     "doctor"  { Test-Deps }
     "build"   { Invoke-Step "cargo" @("build") }
     "release" { Invoke-Step "cargo" @("build", "--release") }

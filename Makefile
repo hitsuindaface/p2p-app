@@ -17,7 +17,7 @@ APT        := $(call section,apt)
 BREW       := $(call section,brew)
 
 .DEFAULT_GOAL := help
-.PHONY: help setup system-deps rust doctor build release run test fmt lint check clean
+.PHONY: help setup recap system-deps rust doctor build release run test fmt lint check clean
 
 help: ## Show this list
 	@echo "Usage: make <target>"
@@ -27,6 +27,9 @@ help: ## Show this list
 setup: system-deps rust ## Install everything in .dependencies
 	@echo
 	@echo "Setup done. Reopen the terminal so 'cargo' is on your PATH, then run: make build"
+
+recap: ## Start of the day: get the latest code, update Rust, check tools, build
+	@bash scripts/recap.sh
 
 system-deps:
 ifeq ($(OS),Linux)

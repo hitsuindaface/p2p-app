@@ -34,6 +34,7 @@ The same targets work on every platform. On Windows, write `.\make` in place of 
 
 | Command      | What it does                                         |
 |--------------|------------------------------------------------------|
+| `make recap` | Start of the day: latest code, Rust update, tool check, build |
 | `make run`   | Start the chat. Start it in two terminals to test.  |
 | `make test`  | Run all tests                                        |
 | `make fmt`   | Format all code                                      |
