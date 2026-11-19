@@ -1,0 +1,4 @@
+# Project commands. Run `cargo xtask help` for the list.
+[alias]
+xtask = "run --package xtask --quiet --"
+lint = "clippy --workspace --all-targets -- -D warnings"
