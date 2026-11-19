@@ -1,8 +1,10 @@
 # Everything you need to install to build and run p2p-app.
 #
-# Read by:
-#   Makefile   (Linux and macOS)  ->  make setup
-#   make.ps1   (Windows)          ->  .\make setup
+# Read by xtask (xtask/src/main.rs):
+#   cargo xtask setup    installs everything below for your system
+#   cargo xtask doctor   checks what is installed
+#
+# Before xtask can run, a fresh machine needs Rust and a C linker. See README.md.
 #
 # Format: one item per line under a [section]. Text after # is a comment.
 # To add a dependency, add it here and run setup again. Do not install

@@ -4,45 +4,83 @@ A peer-to-peer messenger for the local network, written in Rust.
 
 ## Getting started
 
-Everything the project needs is listed in [`.dependencies`](.dependencies).
-One command installs all of it.
+### 1. Install Rust and a C linker (once per machine)
 
-**Linux, WSL and macOS**
+Cargo cannot install these itself, so do this by hand the first time.
+
+**Ubuntu, Debian and WSL**
 
 ```bash
-make setup
-make build
+sudo apt install build-essential curl
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
-**Windows** (PowerShell, in the repo folder)
+**macOS**
+
+```bash
+xcode-select --install
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+**Windows** (PowerShell)
 
 ```powershell
-.\make setup
-.\make build
+winget install Rustlang.Rustup
 ```
 
-`setup` uses `apt` on Ubuntu/Debian and WSL, Xcode Command Line Tools on macOS,
-and `winget` on Windows. It may ask for your password or show installer windows.
-Reopen the terminal when it finishes.
+When the Rust installer asks to install the Visual Studio C++ build tools, say yes.
+If you already have Visual Studio with "Desktop development with C++", that is enough.
+If `cargo` later says `link.exe` was not found, the C++ tools are missing. Install them with:
 
-To check what is installed without changing anything, run `make doctor`
-(Windows: `.\make doctor`).
+```powershell
+winget install Microsoft.VisualStudio.2022.BuildTools --override "--wait --passive --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
+```
+
+Open a new terminal afterwards so `cargo` is on your PATH.
+
+### 2. Install everything else
+
+```bash
+cargo xtask setup
+```
+
+This reads [`.dependencies`](.dependencies) and installs what your system needs:
+system libraries with `apt` on Linux, Xcode Command Line Tools on macOS, and
+Perl and WebView2 with `winget` on Windows. It skips anything already installed.
+
+To check what is installed without changing anything:
+
+```bash
+cargo xtask doctor
+```
+
+### 3. Build and run
+
+```bash
+cargo build
+cargo run -r
+```
 
 ## Commands
 
-The same targets work on every platform. On Windows, write `.\make` in place of `make`.
+Everyday work is plain Cargo. `cargo xtask` covers the chores Cargo cannot do on its own.
+The commands are the same on Windows, Linux and macOS.
 
-| Command      | What it does                                         |
-|--------------|------------------------------------------------------|
-| `make recap` | Start of the day: latest code, Rust update, tool check, build |
-| `make run`   | Start the chat. Start it in two terminals to test.  |
-| `make test`  | Run all tests                                        |
-| `make fmt`   | Format all code                                      |
-| `make lint`  | Run clippy and treat warnings as errors              |
-| `make check` | Format check, lint and tests: the same checks as CI |
-| `make help`  | List every command                                   |
+| Command             | What it does                                                    |
+|---------------------|-----------------------------------------------------------------|
+| `cargo run -r`      | Start the chat. Start it in two terminals to test.              |
+| `cargo test`        | Run the tests                                                   |
+| `cargo fmt`         | Format the code                                                 |
+| `cargo lint`        | Run clippy and treat warnings as errors                         |
+| `cargo xtask check` | Format check, lint and tests: the same checks as CI             |
+| `cargo xtask recap` | Start of the day: latest code, Rust update check, tool check, build |
+| `cargo xtask setup` | Install everything in `.dependencies`                           |
+| `cargo xtask doctor`| Check that everything is installed                              |
 
-Run `make check` before you open a pull request.
+Run `cargo xtask check` before you open a pull request.
+
+`cargo lint` and `cargo xtask` are aliases defined in [`.cargo/config.toml`](.cargo/config.toml).
+The xtask code is in [`xtask/src/main.rs`](xtask/src/main.rs).
 
 ## Using the chat
 
