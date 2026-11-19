@@ -29,4 +29,4 @@ proptest = "1.12.0"
 tempfile = "3.27.0"
 
 [workspace]
-members = [".", "xtask"]
+members = [".", "xtask", "relay-server"]
