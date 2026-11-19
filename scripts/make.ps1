@@ -33,6 +33,31 @@ function Invoke-Step([string]$Exe, [string[]]$Arguments) {
     if ($LASTEXITCODE -ne 0) { throw "$Exe failed with exit code $LASTEXITCODE" }
 }
 
+# Visual Studio's installer puts vswhere here. It lists every installed edition and its components.
+$vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
+
+# True when any Visual Studio edition (Community, Professional, Build Tools, ...) has the C++ compiler.
+function Test-MsvcTools {
+    if (-not (Test-Path $vswhere)) { return $false }
+    $found = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+    return [bool]$found
+}
+
+# These count as installed however they got there, not only when winget installed them.
+# Without this, setup installs a second copy next to one installed by hand.
+$customChecks = @{
+    "Git.Git"                                = { [bool](Get-Command git -ErrorAction SilentlyContinue) }
+    "Rustlang.Rustup"                        = { [bool](Get-Command rustup -ErrorAction SilentlyContinue) }
+    "StrawberryPerl.StrawberryPerl"          = { [bool](Get-Command perl -ErrorAction SilentlyContinue) }
+    "Microsoft.VisualStudio.2022.BuildTools" = { Test-MsvcTools }
+}
+
+function Test-Installed([string]$Id) {
+    if ($customChecks.ContainsKey($Id)) { return [bool](& $customChecks[$Id]) }
+    winget list --id $Id --exact --accept-source-agreements *> $null
+    return ($LASTEXITCODE -eq 0)
+}
+
 function Install-SystemDeps {
     if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
         throw "winget is missing. Install 'App Installer' from the Microsoft Store, then run .\make setup again."
@@ -40,8 +65,7 @@ function Install-SystemDeps {
     foreach ($entry in Get-Section "winget") {
         $id, $override = $entry -split '\|', 2
         $id = $id.Trim()
-        winget list --id $id --exact --accept-source-agreements *> $null
-        if ($LASTEXITCODE -eq 0) { Write-Host "  ok       $id"; continue }
+        if (Test-Installed $id) { Write-Host "  ok       $id"; continue }
         Write-Host "  install  $id" -ForegroundColor Cyan
         $wingetArgs = @("install", "--id", $id, "--exact", "--accept-package-agreements", "--accept-source-agreements")
         if ($override) { $wingetArgs += @("--override", $override.Trim()) }
@@ -64,7 +88,7 @@ function Install-Rust {
 function Test-Deps {
     Update-Path
     $ok = $true
-    foreach ($tool in "rustup", "cargo", "git", "perl") {
+    foreach ($tool in "rustup", "cargo") {
         if (Get-Command $tool -ErrorAction SilentlyContinue) { Write-Host "  ok       $tool" }
         else { Write-Host "  missing  $tool" -ForegroundColor Yellow; $ok = $false }
     }
@@ -77,8 +101,7 @@ function Test-Deps {
     }
     foreach ($entry in Get-Section "winget") {
         $id = ($entry -split '\|', 2)[0].Trim()
-        winget list --id $id --exact --accept-source-agreements *> $null
-        if ($LASTEXITCODE -eq 0) { Write-Host "  ok       $id" }
+        if (Test-Installed $id) { Write-Host "  ok       $id" }
         else { Write-Host "  missing  $id" -ForegroundColor Yellow; $ok = $false }
     }
     if ($ok) { Write-Host "Everything is installed." } else { throw "Run: .\make setup" }
