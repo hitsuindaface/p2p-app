@@ -25,3 +25,15 @@ pub enum RejectReason {
     #[error("6: bad signature")]        BadSignature,
     #[error("7: replay")]               Replay,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn reject_reasons_name_the_check_number() {
+        assert_eq!(RejectReason::TooLarge.to_string(), "1: too large");
+        assert_eq!(RejectReason::BadSignature.to_string(), "6: bad signature");
+        assert_eq!(RejectReason::Replay.to_string(), "7: replay");
+    }
+}
