@@ -1,0 +1,13 @@
+[package]
+name = "p2p-relay-server"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "relay-server"
+path = "src/main.rs"
+
+[dependencies]
+futures = "0.3.34"
+libp2p = { version = "0.57.1", features = ["tokio", "tcp", "noise", "yamux", "relay", "identify", "ping", "macros", "ed25519"] }
+tokio = { version = "1.54.1", features = ["macros", "rt-multi-thread", "signal"] }

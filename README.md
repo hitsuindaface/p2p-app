@@ -101,3 +101,19 @@ hello           anything that does not start with / is sent
 If the build needs a new system package, add it to the right section of
 `.dependencies` (`[apt]`, `[brew]` or `[winget]`) in the same pull request.
 Rust crates go in `Cargo.toml` as usual and need no entry there.
+
+## Relay server
+
+`relay-server/` is its own crate. It keeps no state and makes a new key on
+every start; clients learn its PeerId when they connect. It needs a public
+TCP port and its public address as the first argument; it listens on that address's port
+unless a second argument gives another:
+
+```bash
+cargo run -r -p p2p-relay-server -- /dns4/p2p.miro.zip/tcp/47802
+podman build -f relay-server/Dockerfile .
+```
+
+A push to `main` that changes `relay-server/` builds a `linux/arm64` image and
+pushes it to `ghcr.io/hitsuindaface/p2p-relay-server` with the tags `latest`
+and the commit SHA.
