@@ -1,5 +1,5 @@
 use argon2::{Algorithm, Argon2, Params, Version};
-use zerorize::Zeroizing;
+use zeroize::Zeroizing;
 
 pub const SALT_LEN: usize = 16;
 

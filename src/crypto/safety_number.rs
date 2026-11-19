@@ -3,7 +3,7 @@ use sha2::{Digest, Sha512};
 
 const DOMAIN: &[u8] = b"p2pmsg-fingerprint-v1";
 
-fn raw_ed25519(pk: &PubliKey) -> [u8; 32] {
+fn raw_ed25519(pk: &PublicKey) -> [u8; 32] {
     pk.clone()
         .try_into_ed25519()
         .expect("identity keys are always Ed25519")
@@ -14,7 +14,7 @@ fn raw_ed25519(pk: &PubliKey) -> [u8; 32] {
 fn fingerprint_digits(raw: &[u8; 32]) -> String {
     let hash = Sha512::new().chain_update(DOMAIN).chain_update(raw).finalize();
     hash[..30]
-        .chunk(5)
+        .chunks(5)
         .map(|c| {
             let n = c.iter().fold(0u64, |acc, &b| (acc << 8) | b as u64);
             format!("{:05}", n % 100_000)
