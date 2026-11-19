@@ -99,3 +99,17 @@ hello           anything that does not start with / is sent
 If the build needs a new system package, add it to the right section of
 `.dependencies` (`[apt]`, `[brew]` or `[winget]`) in the same pull request.
 Rust crates go in `Cargo.toml` as usual and need no entry there.
+
+## Directory server
+
+The directory server lives in `directory-server/` as its own crate, so it builds
+without the app's dependencies. It listens on UDP 47802 by default.
+
+```bash
+cargo run -r -p p2p-directory-server            # local run
+podman build -f directory-server/Dockerfile . # container image
+```
+
+A push to `main` that changes `directory-server/` builds a `linux/arm64` image and
+pushes it to `ghcr.io/hitsuindaface/p2p-directory-server` with the tags `latest` and
+the commit SHA.

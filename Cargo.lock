@@ -3742,6 +3742,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "p2p-directory-server"
+version = "0.1.0"
+dependencies = [
+ "blake3",
+ "tokio",
+]
+
+[[package]]
 name = "pango"
 version = "0.18.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"

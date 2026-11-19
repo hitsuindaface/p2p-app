@@ -1,0 +1,12 @@
+[package]
+name = "p2p-directory-server"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "directory-server"
+path = "src/main.rs"
+
+[dependencies]
+blake3 = "1.8.7"
+tokio = { version = "1.54.1", features = ["macros", "net", "rt-multi-thread", "signal", "time"] }
