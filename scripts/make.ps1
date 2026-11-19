@@ -122,6 +122,7 @@ $targets = [ordered]@{
 }
 
 Update-Path
+try {
 switch ($Target) {
     "help" {
         Write-Host "Usage: .\make <target>`n"
@@ -146,4 +147,8 @@ switch ($Target) {
     }
     "clean"   { Invoke-Step "cargo" @("clean") }
     default   { Write-Host "Unknown target '$Target'. Run .\make help"; exit 1 }
+}
+} catch {
+    Write-Host $_.Exception.Message -ForegroundColor Red
+    exit 1
 }
