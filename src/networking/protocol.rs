@@ -64,7 +64,10 @@ impl Discovery {
         let id = NodeId(id.try_into().ok()?);
         match (kind, rest.len()) {
             (QUERY, 0) => Some(Discovery::Query(id)),
-            (ANNOUNCE, 2) => Some(Discovery::Announce(id, u16::from_be_bytes([rest[0], rest[1]]))),
+            (ANNOUNCE, 2) => Some(Discovery::Announce(
+                id,
+                u16::from_be_bytes([rest[0], rest[1]]),
+            )),
             _ => None,
         }
     }
@@ -83,7 +86,10 @@ pub fn decode_hello(buf: &[u8]) -> Option<NodeId> {
 // Blob layout: u16 payload length, payload, zero padding up to BLOB_SIZE.
 pub fn encode_blob(payload: &[u8]) -> io::Result<Blob> {
     if payload.len() > MAX_PAYLOAD {
-        return Err(io::Error::new(io::ErrorKind::InvalidInput, "message too long"));
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "message too long",
+        ));
     }
     let mut blob = [0u8; BLOB_SIZE];
     blob[..2].copy_from_slice(&(payload.len() as u16).to_be_bytes());
@@ -94,7 +100,10 @@ pub fn encode_blob(payload: &[u8]) -> io::Result<Blob> {
 pub fn decode_blob(blob: &Blob) -> io::Result<&[u8]> {
     let len = u16::from_be_bytes([blob[0], blob[1]]) as usize;
     if len > MAX_PAYLOAD {
-        return Err(io::Error::new(io::ErrorKind::InvalidData, "bad blob length"));
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "bad blob length",
+        ));
     }
     Ok(&blob[2..2 + len])
 }

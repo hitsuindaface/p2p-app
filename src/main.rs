@@ -7,9 +7,16 @@ const HELP: &str = "commands: /list | /connect <index> | /disconnect | /quit | o
 
 #[tokio::main]
 async fn main() -> io::Result<()> {
-    let cfg = Config { tcp_port: 47801, discovery_port: 47800 };
+    let cfg = Config {
+        tcp_port: 47801,
+        discovery_port: 47800,
+    };
     let node = netlib::start(cfg, print_event).await?;
-    println!("node {} on tcp {}\n{HELP}", node.id().short(), node.tcp_port());
+    println!(
+        "node {} on tcp {}\n{HELP}",
+        node.id().short(),
+        node.tcp_port()
+    );
 
     let mut lines = BufReader::new(tokio::io::stdin()).lines();
     while let Some(line) = lines.next_line().await? {
@@ -22,12 +29,10 @@ async fn main() -> io::Result<()> {
             "/disconnect" => netlib::disconnect(&node),
             "/quit" => break,
             _ if cmd.starts_with('/') => println!("{HELP}"),
-            _ => {
-                match netlib::send(&node, line) {
-                    Ok(()) => println!("{} (you): {line}", node.id().short()),
-                    Err(e) => println!("not sent: {e}"),
-                }
-            }
+            _ => match netlib::send(&node, line) {
+                Ok(()) => println!("{} (you): {line}", node.id().short()),
+                Err(e) => println!("not sent: {e}"),
+            },
         }
     }
     Ok(())
