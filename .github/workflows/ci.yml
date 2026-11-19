@@ -1,0 +1,58 @@
+# Runs the same checks everyone runs locally with `cargo xtask check`
+# (format, lint, test) on Windows, Linux and macOS.
+#
+# Runs on every pull request and every push to main. Free for public repos.
+# Make the three "check" jobs required in the branch rule for main, so a
+# pull request can only be merged when all three pass.
+
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:        # adds a "Run workflow" button in the Actions tab
+
+# A new push to the same pull request cancels the run that is still going.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# The workflow only reads the code. Pull requests from forks can never write to the repo.
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    name: check (${{ matrix.os }})
+    strategy:
+      fail-fast: false      # a failure on one system does not stop the others
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v5
+
+      # GitHub's machines come with rustup. Update to the newest stable Rust,
+      # so CI uses the same version as `cargo xtask recap` tells everyone to use.
+      - name: Update Rust
+        run: rustup update stable --no-self-update && rustup default stable
+
+      # Keeps compiled dependencies between runs. The first run on each
+      # system is slow (OpenSSL and Tauri compile from source); later runs are fast.
+      - uses: Swatinem/rust-cache@v2
+
+      # Installs what .dependencies lists, which also tests that the list is complete.
+      # Windows skips this: GitHub's Windows machines already have Visual Studio,
+      # Perl and WebView2, and winget is not reliably available there.
+      - name: Install dependencies
+        if: runner.os != 'Windows'
+        run: cargo xtask setup
+
+      - name: Format, lint, test
+        run: cargo xtask check
