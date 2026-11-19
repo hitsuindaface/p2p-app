@@ -10,7 +10,9 @@ use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
 use tokio::task::JoinHandle;
 
 use crate::networking::discovery::lan;
-use crate::networking::protocol::{BLOB_SIZE, Blob, NodeId, decode_blob, decode_hello, encode_blob, encode_hello};
+use crate::networking::protocol::{
+    BLOB_SIZE, Blob, NodeId, decode_blob, decode_hello, encode_blob, encode_hello,
+};
 
 pub const DEFAULT_TCP_PORT: u16 = 47801;
 const HANDSHAKE_TIMEOUT: Duration = Duration::from_secs(5);
@@ -105,7 +107,9 @@ impl Node {
 
     pub fn connected(&self) -> Option<(NodeId, SocketAddr)> {
         let conn = self.inner.conn.lock().unwrap();
-        conn.as_ref().filter(|c| !c.tx.is_closed()).map(|c| (c.peer, c.addr))
+        conn.as_ref()
+            .filter(|c| !c.tx.is_closed())
+            .map(|c| (c.peer, c.addr))
     }
 
     pub async fn connect(&self, addr: SocketAddr) -> io::Result<NodeId> {
@@ -163,7 +167,8 @@ impl Node {
 
         // TODO(crypto): key exchange goes next to hello.
         let peer = tokio::time::timeout(HANDSHAKE_TIMEOUT, async {
-            wr.write_all(&encode_blob(&encode_hello(self.inner.id))?).await?;
+            wr.write_all(&encode_blob(&encode_hello(self.inner.id))?)
+                .await?;
             let mut blob = [0u8; BLOB_SIZE];
             rd.read_exact(&mut blob).await?;
             decode_hello(decode_blob(&blob)?)
@@ -193,13 +198,22 @@ impl Node {
                 while rd.read_exact(&mut blob).await.is_ok() {
                     // TODO(crypto): decrypt blob here.
                     match decode_blob(&blob) {
-                        Ok(data) => node.emit(Event::Message { from: peer, data: data.to_vec() }),
+                        Ok(data) => node.emit(Event::Message {
+                            from: peer,
+                            data: data.to_vec(),
+                        }),
                         Err(_) => break,
                     }
                 }
                 node.drop_conn(generation);
             });
-            *conn = Some(Conn { peer, addr, tx, reader, generation });
+            *conn = Some(Conn {
+                peer,
+                addr,
+                tx,
+                reader,
+                generation,
+            });
         }
         self.emit(Event::Connected(peer, addr));
         Ok(peer)

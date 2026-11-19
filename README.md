@@ -78,6 +78,8 @@ The commands are the same on Windows, Linux and macOS.
 | `cargo xtask doctor`| Check that everything is installed                              |
 
 Run `cargo xtask check` before you open a pull request.
+CI runs the same command on Windows, Linux and macOS for every pull request
+([`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
 
 `cargo lint` and `cargo xtask` are aliases defined in [`.cargo/config.toml`](.cargo/config.toml).
 The xtask code is in [`xtask/src/main.rs`](xtask/src/main.rs).

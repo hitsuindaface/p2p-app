@@ -14,7 +14,11 @@ const WAIT: Duration = Duration::from_secs(1);
 pub async fn respond(id: NodeId, tcp_port: u16, port: u16) {
     let sock = match bind_shared(port) {
         Ok(s) => s,
-        Err(e) => return eprintln!("[lan] cannot listen on udp {port} ({e}), others cannot find this node"),
+        Err(e) => {
+            return eprintln!(
+                "[lan] cannot listen on udp {port} ({e}), others cannot find this node"
+            );
+        }
     };
     let reply = Discovery::Announce(id, tcp_port).encode();
     let mut buf = [0u8; 64];
