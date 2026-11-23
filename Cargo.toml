@@ -10,7 +10,7 @@ socket2 = { version = "0.6.5", features = ["all"] }
 rusqlite = { version = "0.41.1", features = ["bundled-sqlcipher-vendored-openssl"] }
 tauri = "2.12.5"
 tokio = { version = "1.54.1", features = ["full"] }
-libp2p = { version = "0.57.1", features = ["tokio", "tcp", "noise", "yamux", "mdns", "request-response", "cbor", "identify", "ping", "macros", "ed25519"] }
+libp2p = { version = "0.57.1", features = ["tokio", "tcp", "dns", "noise", "yamux", "mdns", "kad", "relay", "dcutr", "request-response", "cbor", "identify", "ping", "macros", "ed25519", "rsa"] }
 argon2 = "0.6.0"
 sha2 = "0.11.1"
 rand = "0.10.4"

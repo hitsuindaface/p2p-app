@@ -36,7 +36,7 @@ jobs:
     timeout-minutes: 45
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       # GitHub's machines come with rustup. Update to the newest stable Rust,
       # so CI uses the same version as `cargo xtask recap` tells everyone to use.
@@ -45,7 +45,7 @@ jobs:
 
       # Keeps compiled dependencies between runs. The first run on each
       # system is slow (OpenSSL and Tauri compile from source); later runs are fast.
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
 
       # Installs what .dependencies lists, which also tests that the list is complete.
       # Windows skips this: GitHub's Windows machines already have Visual Studio,

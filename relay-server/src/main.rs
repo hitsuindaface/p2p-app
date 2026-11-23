@@ -20,7 +20,7 @@ mod behaviour {
     }
 }
 
-// Usage: relay-server <public multiaddr, e.g. /dns4/p2p.miro.zip/tcp/47802> [listen port]
+// Usage: relay-server <public multiaddr, e.g. /dns4/relay.example.com/tcp/47802> [listen port]
 // The listen port defaults to the port in the public multiaddr.
 #[tokio::main]
 async fn main() -> io::Result<()> {
@@ -85,6 +85,8 @@ async fn main() -> io::Result<()> {
     swarm.add_external_address(external);
     println!("relay {} on tcp {port}", swarm.local_peer_id());
 
+    let stop = shutdown();
+    tokio::pin!(stop);
     loop {
         tokio::select! {
             ev = swarm.select_next_some() => {
@@ -92,7 +94,7 @@ async fn main() -> io::Result<()> {
                     println!("{e:?}");
                 }
             }
-            _ = shutdown() => return Ok(()),
+            _ = &mut stop => return Ok(()),
         }
     }
 }

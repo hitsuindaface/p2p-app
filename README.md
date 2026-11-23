@@ -89,11 +89,9 @@ The xtask code is in [`xtask/src/main.rs`](xtask/src/main.rs).
 Start two copies, then in one of them:
 
 ```
-/list           show the peers that were found
-/connect 0      connect to peer number 0 in the list
-hello           anything that does not start with / is sent
-/disconnect
-/quit
+list            find peers: on the LAN first, then on the internet
+send 0 hello    send "hello" to peer number 0 in the list
+quit            exit (Ctrl+C does the same)
 ```
 
 ## Adding a dependency
@@ -101,6 +99,31 @@ hello           anything that does not start with / is sent
 If the build needs a new system package, add it to the right section of
 `.dependencies` (`[apt]`, `[brew]` or `[winget]`) in the same pull request.
 Rust crates go in `Cargo.toml` as usual and need no entry there.
+
+## Networking
+
+Peers find each other in two ways, without a central directory:
+
+- **LAN:** mDNS.
+- **Internet:** every running app announces itself as a provider of the key
+  `p2penis/v1/<hour>` in the public IPFS DHT, and `list` asks for the current
+  and previous hour. A new user can take up to about a minute to show up; a
+  closed app drops out within two hours, because DHT servers cannot be told to
+  forget an announcement.
+
+Connections are encrypted and authenticated with Noise. Users behind a home
+router are reached through a small libp2p relay, after which DCUtR tries to
+punch a direct connection; if that fails, messages stay on the relay, which
+limits each circuit to about 128 KiB and 2 minutes.
+
+```bash
+cargo run -r                                   # uses the default relays
+cargo run -r -- /ip4/203.0.113.5/tcp/47802     # other relay(s)
+```
+
+The default relays are `DEFAULT_RELAYS` in `src/networking/node.rs`.
+
+CLI commands: `list`, `send <index> <text>`, `quit`.
 
 ## Relay server
 
@@ -110,7 +133,7 @@ TCP port and its public address as the first argument; it listens on that addres
 unless a second argument gives another:
 
 ```bash
-cargo run -r -p p2p-relay-server -- /dns4/p2p.miro.zip/tcp/47802
+cargo run -r -p p2p-relay-server -- /dns4/relay.example.com/tcp/47802
 podman build -f relay-server/Dockerfile .
 ```
 
