@@ -1,3 +1,3 @@
 pub mod networking;
 
-pub use networking::{Config, Event, Node, NodeId, netlib};
+pub use networking::{Config, Event, Identity, Node, Peer, default_relays};
