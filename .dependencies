@@ -1,0 +1,49 @@
+# Everything you need to install to build and run p2p-app.
+#
+# Read by xtask (xtask/src/main.rs):
+#   cargo xtask setup    installs everything below for your system
+#   cargo xtask doctor   checks what is installed
+#
+# Before xtask can run, a fresh machine needs Rust and a C linker. See README.md.
+#
+# Format: one item per line under a [section]. Text after # is a comment.
+# To add a dependency, add it here and run setup again. Do not install
+# things by hand without listing them here, or the next person's build fails.
+
+
+[rust-toolchain]
+# Installed with rustup on every platform. Edition 2024 needs Rust 1.85 or newer.
+stable
+
+[rust-components]
+rustfmt                  # cargo fmt
+clippy                   # cargo clippy
+
+
+[apt]
+# Ubuntu and Debian, including WSL. Installed with: sudo apt-get install
+build-essential          # C compiler and make; used to build SQLCipher and OpenSSL
+pkg-config               # lets Rust find the system libraries below
+curl                     # downloads rustup
+wget
+file
+libssl-dev
+libwebkit2gtk-4.1-dev    # Tauri: the web view the desktop app draws in
+libxdo-dev               # Tauri: keyboard and mouse helpers
+libayatana-appindicator3-dev   # Tauri: tray icon
+librsvg2-dev             # Tauri: SVG icons
+
+
+[brew]
+# macOS. Xcode Command Line Tools are installed by make setup itself.
+# Nothing from Homebrew is needed yet.
+
+
+[winget]
+# Windows. Installed with: winget install --id <id> --exact
+# Text after | is passed to the installer, for packages that need options.
+Git.Git
+Rustlang.Rustup
+StrawberryPerl.StrawberryPerl          # Perl, needed to build OpenSSL from source
+Microsoft.EdgeWebView2Runtime          # Tauri: already on Windows 11
+Microsoft.VisualStudio.2022.BuildTools | --wait --passive --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended

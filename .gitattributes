@@ -1,2 +1,5 @@
-* text=auto eol=lf
+# Keep line endings consistent, whichever system a file is committed from.
+*              text=auto
+*.sh           text eol=lf
+.dependencies  text eol=lf
 *.der binary
