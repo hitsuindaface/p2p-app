@@ -83,7 +83,9 @@ Signing is extra to Noise: it gives proof of authorship that survives storage an
 6. Signature verifies against `sender`'s public key.
 7. `msg_id` not seen before from this sender.
 
-Failure at any step: drop the message, log the step number (never the content), and reply `Ack { msg_id, status: Rejected }` if a `msg_id` could not be read. Success: store, then reply `Ack { msg_id, status: Delivered }`.
+Failure at any step: drop the message, log the step number (never the content), and reply `Ack { msg_id, status: Rejected }` if a `msg_id` could be read. Success: store, then reply `Ack { msg_id, status: Delivered }`.
+
+Exception: a duplicate `msg_id` (check 7) means the sender retried after a lost Ack. Reply `Ack { msg_id, status: Delivered }` and do not store the message again. This is safe because check 7 runs after the signature check, so the `msg_id` is authenticated.
 
 ## 7. File transfer: `/p2pmsg/file/1.0.0` (T8)
 
@@ -123,4 +125,5 @@ Protocol IDs carry a version (`/1.0.0`). A breaking change gets a new ID; both v
 
 - Should `Receipt` messages be signed envelopes or plain acks?
 - Do we need clock-skew limits on `timestamp`, or is display-only enough?
+- The replay set (check 7) is kept in memory, so it is lost on restart and grows without bound. Proposal: a `UNIQUE (sender, msg_id)` constraint on the messages table, with the in-memory set as a cache.
 - Chunk hashes in v0.1 come from the sender at transfer time; should the offer include a full hash list (or use BLAKE3 verfied streaming via `bao`) instead?

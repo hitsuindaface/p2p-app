@@ -15,15 +15,22 @@ pub enum CryptoError {
 }
 
 /// Which receive check failed (spec §6). Log this, never the content.
-#[derive(Debug, Error, PartialEq, Eq)]
+#[derive(Debug, Error, Clone, Copy, PartialEq, Eq)]
 pub enum RejectReason {
-    #[error("1: too large")]            TooLarge,
-    #[error("2: malformed")]            Malformed,
-    #[error("3: unsupported version")]  BadVersion,
-    #[error("4: sender mismatch")]      WrongSender,
-    #[error("5: not for us")]           WrongRecipient,
-    #[error("6: bad signature")]        BadSignature,
-    #[error("7: replay")]               Replay,
+    #[error("1: too large")]
+    TooLarge,
+    #[error("2: malformed")]
+    Malformed,
+    #[error("3: unsupported version")]
+    BadVersion,
+    #[error("4: sender mismatch")]
+    WrongSender,
+    #[error("5: not for us")]
+    WrongRecipient,
+    #[error("6: bad signature")]
+    BadSignature,
+    #[error("7: replay")]
+    Replay,
 }
 
 #[cfg(test)]
