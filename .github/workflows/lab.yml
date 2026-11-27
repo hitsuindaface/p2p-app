@@ -1,0 +1,35 @@
+# Runs the Docker test lab every night: two fresh nodes on a private network
+# find each other and chat (testlab/smoke.sh). See testlab/README.md.
+#
+# Scheduled runs only use main, so only reviewed code runs here.
+# The logs of both nodes are saved as the run artifact "testlab-results".
+
+name: lab
+
+on:
+  schedule:
+    - cron: "17 2 * * *"    # every night at 02:17 UTC
+  workflow_dispatch:        # adds a "Run workflow" button in the Actions tab
+
+# The workflow only reads the code.
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - name: Lab smoke test
+        run: bash testlab/smoke.sh
+
+      - name: Save the lab logs
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: testlab-results
+          path: testlab/results/
+          if-no-files-found: warn
