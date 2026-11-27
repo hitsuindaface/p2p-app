@@ -94,6 +94,17 @@ send 0 hello    send "hello" to peer number 0 in the list
 quit            exit (Ctrl+C does the same)
 ```
 
+## Testing
+
+[`docs/testing.md`](docs/testing.md) explains the kinds of tests, when a pull
+request is done, and which test proves each success criterion and threat.
+
+```bash
+cargo test                       # unit, property and integration tests
+cargo test -- --ignored          # also the tests that use the real network
+bash testlab/smoke.sh            # two nodes in Docker (see testlab/README.md)
+```
+
 ## Adding a dependency
 
 If the build needs a new system package, add it to the right section of

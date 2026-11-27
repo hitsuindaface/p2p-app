@@ -1,0 +1,25 @@
+# Two fresh p2p-app nodes on one private network. See README.md in this folder.
+#
+# The containers can reach each other (mDNS works) but not the internet, so
+# they never touch the public DHT or the relay. The image's entry point
+# (offline.sh) removes the default route before the app starts. The network is
+# not `internal: true`, because Docker then drops multicast and mDNS fails.
+
+name: p2p-testlab
+
+services:
+  alice: &node
+    build:
+      context: ..
+      dockerfile: testlab/Dockerfile
+    image: p2p-testlab-node
+    init: true               # stops quickly on `docker compose down`
+    cap_add: [NET_ADMIN]     # lets offline.sh remove the route and tc change the network
+    networks: [lan]
+    # Keeps stdin open so the chat does not quit at end of input.
+    command: ["sh", "-c", "tail -f /dev/null | p2p-app"]
+  bob: *node
+
+networks:
+  lan:
+    enable_ipv6: false       # IPv4 only, so removing the IPv4 default route is enough
